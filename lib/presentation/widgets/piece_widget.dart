@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/models/base.dart';
+import '../../data/models/base.dart';
 
 class PieceWidget extends StatelessWidget {
   final Piece piece;

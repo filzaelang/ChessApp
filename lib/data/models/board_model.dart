@@ -71,12 +71,11 @@ class BoardModel extends ChangeNotifier {
       PieceType.rook,
     ]);
 
-    // Note: ranks 2..5 remain empty (indexes 2..5)
     notifyListeners();
   }
 
   String _symbolFor(PieceType t, PieceColor c) {
-    // Unicode chess glyphs
+    // Unicode
     const white = {
       PieceType.king: '♔',
       PieceType.queen: '♕',

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../data/models/board_model.dart';
+import '../../data/models/board_model.dart';
 import 'square_widget.dart';
 
 class ChessBoard extends StatelessWidget {
@@ -39,10 +39,6 @@ class ChessBoard extends StatelessWidget {
               child: _buildGrid(board, squareSize),
             ),
             const SizedBox(height: 12),
-            // Simple legend / hints
-            const Text(
-              'Tap a piece to select, then tap a destination to move (no rule enforcement).',
-            ),
           ],
         );
       },
@@ -50,10 +46,9 @@ class ChessBoard extends StatelessWidget {
   }
 
   Widget _buildGrid(BoardModel boardModel, double squareSize) {
-    // We want ranks 7..0 top to bottom to show white at bottom (rank 0)
     return Column(
       children: List.generate(8, (rankIndexFromTop) {
-        final rank = 7 - rankIndexFromTop; // convert to 0..7 bottom-up
+        final rank = 7 - rankIndexFromTop;
         return Row(
           children: List.generate(8, (file) {
             return SizedBox(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../data/models/board_model.dart';
+import '../../data/models/board_model.dart';
 import 'piece_widget.dart';
 
 class SquareWidget extends StatelessWidget {
