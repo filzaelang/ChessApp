@@ -55,8 +55,8 @@ class RoomPage extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        makeRooms(context);
+                      onPressed: () async {
+                        await makeRooms(context);
                       },
                       icon: Icon(Icons.add, size: 18),
                       label: Text('Buat Ruangan'),
@@ -84,8 +84,18 @@ class RoomPage extends StatelessWidget {
                     child: ListView(
                       shrinkWrap: true,
                       children: [
-                        _buildRoomItem('Room 1', 'Pemain: 1/2', true),
-                        _buildRoomItem('Room 2', 'Pemain: 2/2', false),
+                        ElevatedButton.icon(
+                          onPressed: () {},
+                          icon: Icon(Icons.search),
+                          label: Text('Cari Ruangan di Lan'),
+                        ),
+                        SizedBox(height: 16),
+                        _buildRoomItem(
+                          'Room 1 (192.168.47.122)',
+                          '1/2',
+                          true,
+                          '192.168.47.122',
+                        ),
                       ],
                     ),
                   ),
@@ -98,7 +108,12 @@ class RoomPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRoomItem(String roomName, String playerCount, bool canJoin) {
+  Widget _buildRoomItem(
+    String roomName,
+    String playerCount,
+    bool canJoin, [
+    String? ip,
+  ]) {
     return Card(
       margin: EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
