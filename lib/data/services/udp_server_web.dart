@@ -1,22 +1,23 @@
-// import 'package:web/web.dart' as web;
+import 'dart:html';
 
-// Future<void> inisiator() async {
-//   // Membuat WebSocket JS bawaan browser
-//   final ws = web.WebSocket('ws://192.168.47.122:8082');
+// 192.168.47.122
+Future<void> inisiator() async {
+  final ws = WebSocket('ws://192.168.47.122:8082');
 
-//   // Event onopen
-//   ws.addEventListener('open', (web.Event event) {
-//     print("WebSocket connected to ws://192.168.47.122:8082");
-//     ws.send("ping");
-//   });
+  ws.onOpen.listen((event) {
+    print("WebSocket connected to ws://192.168.47.122:8082");
+    ws.send("ping");
+  });
 
-//   // Event onmessage
-//   ws.addEventListener('message', (web.MessageEvent event) {
-//     print("Received: ${event.data}");
-//   });
+  ws.onMessage.listen((MessageEvent event) {
+    print("Received: ${event.data}");
+  });
 
-//   // Event onerror
-//   ws.addEventListener('error', (web.Event event) {
-//     print("WebSocket error: $event");
-//   });
-// }
+  ws.onError.listen((event) {
+    print("WebSocket error: $event");
+  });
+
+  ws.onClose.listen((event) {
+    print("WebSocket connection closed");
+  });
+}

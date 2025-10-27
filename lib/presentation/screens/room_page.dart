@@ -1,16 +1,21 @@
+import 'package:chess/data/models/room_model.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 // import '../widgets/alert.dart';
 import '../../data/services/make_rooms.dart';
+import '../../data/services/room_provider.dart';
+import '../../data/services/room_discovery.dart';
 
 class RoomPage extends StatelessWidget {
   const RoomPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final roomProvider = context.watch<RoomProvider>();
     return Scaffold(
       body: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 400),
+          constraints: const BoxConstraints(maxWidth: 400),
           child: Card(
             elevation: 4,
             shape: RoundedRectangleBorder(
@@ -21,83 +26,63 @@ class RoomPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Header Section
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[600],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Chess Waiting Room',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Siap bermain catur online?',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Create Room Button
+                  _buildHeader(),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: ElevatedButton.icon(
-                      onPressed: () async {
-                        await makeRooms(context);
-                      },
-                      icon: Icon(Icons.add, size: 18),
-                      label: Text('Buat Ruangan'),
+                      onPressed: () async => await makeRooms(context),
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('Buat Ruangan'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        textStyle: TextStyle(fontSize: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(fontSize: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
                   ),
-
-                  // Available Rooms Section
-                  Text(
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final rooms = await discoverRooms();
+                      for (final r in rooms) {
+                        print("Found: $r");
+                        final parts = r.split(':');
+                        if (parts.length >= 3) {
+                          final name = parts[1];
+                          final ip = parts[2];
+                          context.read<RoomProvider>().addRoom(
+                            Room(name: name, ip: ip),
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.search),
+                    label: const Text('Cari Ruangan di LAN'),
+                  ),
+                  const Text(
                     'Ruangan Tersedia',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 12),
-
-                  // Room List
+                  const SizedBox(height: 12),
                   Expanded(
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: Icon(Icons.search),
-                          label: Text('Cari Ruangan di Lan'),
-                        ),
-                        SizedBox(height: 16),
-                        _buildRoomItem(
-                          'Room 1 (192.168.47.122)',
-                          '1/2',
-                          true,
-                          '192.168.47.122',
-                        ),
-                      ],
-                    ),
+                    child: roomProvider.rooms.isEmpty
+                        ? const Center(child: Text('Belum ada ruangan.'))
+                        : ListView.builder(
+                            itemCount: roomProvider.rooms.length,
+                            itemBuilder: (context, index) {
+                              final room = roomProvider.rooms[index];
+                              return _buildRoomItem(
+                                room.name,
+                                '${room.players}/${room.maxPlayers}',
+                                room.canJoin,
+                                room.ip,
+                                context,
+                              );
+                            },
+                          ),
                   ),
                 ],
               ),
@@ -108,22 +93,50 @@ class RoomPage extends StatelessWidget {
     );
   }
 
+  Widget _buildHeader() => Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.blue[600],
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: const [
+        Text(
+          'Chess Waiting Room',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        SizedBox(height: 4),
+        Text(
+          'Siap bermain catur online?',
+          style: TextStyle(color: Colors.white70, fontSize: 14),
+        ),
+      ],
+    ),
+  );
+
   Widget _buildRoomItem(
     String roomName,
     String playerCount,
     bool canJoin, [
     String? ip,
+    BuildContext? context,
   ]) {
     return Card(
-      margin: EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: ListTile(
         title: Text(roomName),
-        subtitle: Text(playerCount),
+        subtitle: Text('IP: $ip\nPemain: $playerCount'),
         trailing: canJoin
             ? ElevatedButton(
-                onPressed: () {},
-                child: Text('Join'),
+                onPressed: () async {
+                  await joinRoom(context!);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
@@ -131,8 +144,9 @@ class RoomPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
+                child: const Text('Join'),
               )
-            : Chip(
+            : const Chip(
                 label: Text('Penuh'),
                 backgroundColor: Colors.red,
                 labelStyle: TextStyle(color: Colors.white),
@@ -141,37 +155,3 @@ class RoomPage extends StatelessWidget {
     );
   }
 }
-
-
-
-
-
-
-// import 'package:flutter/material.dart';
-
-// class RoomPage extends StatelessWidget {
-//   const RoomPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       // AppBar
-//       appBar: AppBar(title: const Text('Hello World Page')),
-
-//       // Body (Berisi konten utama)
-//       body: Center(
-//         child: Text(
-//           'Hello World',
-//           style: TextStyle(
-//             fontSize: 32,
-//             fontWeight: FontWeight.bold,
-//             color: Colors.black,
-//           ),
-//         ),
-//       ),
-
-//       // Floating action button (Opsional)
-//     );
-//   }
-// }
-

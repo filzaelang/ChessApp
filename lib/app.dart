@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'data/models/board_model.dart';
+import 'data/services/room_provider.dart';
 import 'presentation/screens/home_page.dart';
 import 'presentation/screens/room_page.dart';
 import 'package:go_router/go_router.dart';
@@ -10,8 +11,11 @@ class ChessApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => BoardModel(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => BoardModel()),
+        ChangeNotifierProvider(create: (_) => RoomProvider()),
+      ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         title: 'Chess Board UI',
