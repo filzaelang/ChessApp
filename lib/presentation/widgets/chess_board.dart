@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+// import 'package:web/web.dart';
 import '../../data/models/board_model.dart';
 import 'square_widget.dart';
 
 class ChessBoard extends StatelessWidget {
-  const ChessBoard({super.key});
+  final bool isFlipped;
+
+  const ChessBoard({super.key, this.isFlipped = false});
 
   @override
   Widget build(BuildContext context) {
@@ -46,19 +49,24 @@ class ChessBoard extends StatelessWidget {
   }
 
   Widget _buildGrid(BoardModel boardModel, double squareSize) {
+    final ranks = List.generate(8, (i) => i);
+    final files = List.generate(8, (i) => i);
+
+    final rankList = isFlipped ? ranks : ranks.reversed.toList();
+    final fileList = isFlipped ? files.reversed.toList() : files;
+
     return Column(
-      children: List.generate(8, (rankIndexFromTop) {
-        final rank = 7 - rankIndexFromTop;
+      children: rankList.map((rank) {
         return Row(
-          children: List.generate(8, (file) {
+          children: fileList.map((file) {
             return SizedBox(
               width: squareSize,
               height: squareSize,
               child: SquareWidget(file: file, rank: rank),
             );
-          }),
+          }).toList(),
         );
-      }),
+      }).toList(),
     );
   }
 }

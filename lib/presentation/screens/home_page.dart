@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/board_model.dart';
 import '../widgets/chess_board.dart';
+import '../../data/services/udp_server_io.dart' as net;
 
 class ChessHomePage extends StatelessWidget {
   const ChessHomePage({super.key});
@@ -20,7 +21,9 @@ class ChessHomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: const SafeArea(child: Center(child: ChessBoard())),
+      body: SafeArea(
+        child: Center(child: ChessBoard(isFlipped: !net.isServer)),
+      ),
     );
   }
 }
