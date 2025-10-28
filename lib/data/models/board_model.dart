@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'base.dart';
+import '../services/udp_server_io.dart' as net;
 
 class BoardModel extends ChangeNotifier {
   // 8x8 board: board[file][rank] -> file across, rank up (0 bottom)
@@ -121,11 +122,25 @@ class BoardModel extends ChangeNotifier {
         if (targetPiece == null || targetPiece.color != movingPiece.color) {
           to.piece = movingPiece;
           from.piece = null;
+
+          // send move to enemy
+          net.sendMove(from.file, from.rank, to.file, to.rank);
         }
       }
       _selected = null;
       notifyListeners();
     }
+  }
+
+  // saat menerima langkah dari lawan
+  void applyRemoteMove(int fromFile, int fromRank, int toFile, int toRank) {
+    final from = board[fromFile][fromRank];
+    final to = board[toFile][toRank];
+    if (from.piece == null) return;
+
+    to.piece = from.piece;
+    from.piece = null;
+    notifyListeners();
   }
 
   // Utility to get square

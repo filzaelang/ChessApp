@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'package:chess/data/models/board_model.dart';
+import 'package:chess/data/services/udp_server_io.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 final int PORT = 8085;
 final serverIp = InternetAddress('192.168.47.122');
@@ -39,46 +42,14 @@ Future<List<String>> discoverRooms() async {
   return completer.future;
 }
 
-Future<List<String>> joinRoom(BuildContext contex) async {
-  final socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, PORT);
-  socket.broadcastEnabled = true;
+Future<void> joinRoom(BuildContext context) async {
+  final board = Provider.of<BoardModel>(context, listen: false);
+  registerBoard(
+    board,
+    serverMode: false,
+    targetIp: '192.168.47.122',
+  ); // IP server
+  await startUdpListener();
 
-  final String message = 'join_room';
-  socket.send(utf8.encode(message), serverIp, serverPort);
-
-  final completer = Completer<List<String>>();
-  socket.listen((event) {
-    if (event == RawSocketEvent.read) {
-      final dg = socket.receive();
-      if (dg != null) {
-        final data = utf8.decode(dg.data);
-        if (data.startsWith('enter_room')) {
-          contex.goNamed('game');
-        }
-      }
-    }
-  });
-
-  return completer.future;
-}
-
-// pindah bidak hitam
-Future<List<String>> BlackMove(tapped, enemyTapped) async {
-  final socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, PORT);
-  socket.broadcastEnabled = true;
-
-  socket.send(utf8.encode('move:$tapped'), serverIp, serverPort);
-
-  final completer = Completer<List<String>>();
-  socket.listen((event) {
-    if (event == RawSocketEvent.read) {
-      final dg = socket.receive();
-      if (dg != null) {
-        final data = utf8.decode(dg.data);
-        if (data.startsWith('enter_room')) {}
-      }
-    }
-  });
-
-  return completer.future;
+  context.goNamed('game');
 }
